@@ -1,0 +1,246 @@
+'use client';
+
+import { useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { ShoppingCart, Heart, ArrowLeft, Check } from 'lucide-react';
+import { Container } from '@/components/layout/Container';
+import { Button } from '@/components/ui/Button';
+import { StarRating } from '@/components/ui/StarRating';
+import { ProductGrid } from '@/components/product/ProductGrid';
+import { getProductBySlug, getRelatedProducts } from '@/lib/products';
+import { formatPrice } from '@/lib/utils';
+import { useCart } from '@/hooks/useCart';
+import { Color, Size } from '@/lib/types';
+
+export default function ProductDetailPage() {
+  const { slug } = useParams();
+  const product = getProductBySlug(slug || '');
+  const { addToCart } = useCart();
+
+  const [selectedColor, setSelectedColor] = useState<Color | undefined>(product?.colors[0]);
+  const [selectedSize, setSelectedSize] = useState<Size | undefined>(product?.sizes[0]);
+  const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  if (!product) {
+    return (
+      <Container className="py-16 text-center">
+        <h2 className="mb-4">Product Not Found</h2>
+        <Link to="/shop">
+          <Button variant="primary">Continue Shopping</Button>
+        </Link>
+      </Container>
+    );
+  }
+
+  const relatedProducts = getRelatedProducts(product.id);
+  const price = product.salePrice || product.price;
+  const hasDiscount = !!product.salePrice;
+
+  const handleAddToCart = () => {
+    setIsAdding(true);
+    addToCart(product, quantity, selectedColor, selectedSize);
+    
+    setTimeout(() => {
+      setIsAdding(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 500);
+  };
+
+  return (
+    <div className="min-h-screen bg-[--soft-cream]">
+      <Container className="py-8">
+        {/* Breadcrumbs */}
+        <div className="mb-6 flex items-center gap-2 text-sm text-[--warm-grey]">
+          <Link to="/" className="hover:text-[--azebot-gold]">Home</Link>
+          <span>/</span>
+          <Link to="/shop" className="hover:text-[--azebot-gold]">Shop</Link>
+          <span>/</span>
+          <span className="text-[--deep-charcoal]">{product.name}</span>
+        </div>
+
+        <Link to="/shop" className="inline-flex items-center gap-2 text-[--azebot-gold] hover:underline mb-8">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Shop
+        </Link>
+
+        {/* Product Details */}
+        <div className="grid md:grid-cols-2 gap-12 mb-16">
+          {/* Gallery */}
+          <div className="space-y-4">
+            <div className="relative aspect-[3/4] bg-white rounded-lg overflow-hidden shadow-lg">
+              <img
+                src={product.images[0]}
+                alt={product.name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Info */}
+          <div>
+            <h1 className="mb-3">{product.name}</h1>
+
+            {product.rating && (
+              <div className="flex items-center gap-3 mb-4">
+                <StarRating rating={product.rating} showNumber />
+                <span className="text-sm text-[--warm-grey]">
+                  ({product.reviewCount} reviews)
+                </span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-3xl">{formatPrice(price)}</span>
+              {hasDiscount && (
+                <span className="text-xl text-[--warm-grey] line-through">
+                  {formatPrice(product.price)}
+                </span>
+              )}
+            </div>
+
+            <p className="text-[--warm-grey] mb-8 leading-relaxed">
+              {product.description}
+            </p>
+
+            {/* Color Selector */}
+            {product.colors.length > 0 && (
+              <div className="mb-6">
+                <h4 className="mb-3">
+                  Color: <span className="text-[--warm-grey]">{selectedColor?.name}</span>
+                </h4>
+                <div className="flex gap-3">
+                  {product.colors.map((color, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                        selectedColor?.hex === color.hex
+                          ? 'border-[--azebot-gold] scale-110'
+                          : 'border-[--warm-grey]/30 hover:border-[--azebot-gold]'
+                      }`}
+                      style={{ backgroundColor: color.hex }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Size Selector */}
+            {product.sizes.length > 0 && product.sizes[0] !== 'One Size' && (
+              <div className="mb-6">
+                <h4 className="mb-3">Size</h4>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-4 py-2 border-2 rounded transition-all ${
+                        selectedSize === size
+                          ? 'border-[--azebot-gold] bg-[--azebot-gold] text-white'
+                          : 'border-[--warm-grey]/30 hover:border-[--azebot-gold]'
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quantity */}
+            <div className="mb-8">
+              <h4 className="mb-3">Quantity</h4>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 rounded-md border-2 border-[--warm-grey]/30 hover:border-[--azebot-gold] transition-colors"
+                >
+                  -
+                </button>
+                <span className="w-12 text-center">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-10 h-10 rounded-md border-2 border-[--warm-grey]/30 hover:border-[--azebot-gold] transition-colors"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-4 mb-8">
+              <Button
+                variant="primary"
+                size="lg"
+                icon={showSuccess ? <Check className="w-5 h-5" /> : <ShoppingCart className="w-5 h-5" />}
+                onClick={handleAddToCart}
+                loading={isAdding}
+                className="flex-1"
+              >
+                {showSuccess ? 'Added!' : 'Add to Cart'}
+              </Button>
+              <Button variant="outline" size="lg" icon={<Heart className="w-5 h-5" />}>
+                Wishlist
+              </Button>
+            </div>
+
+            {/* Features */}
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-[--ethiopian-green] flex-shrink-0 mt-0.5" />
+                <span>Free shipping on orders over $100</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-[--ethiopian-green] flex-shrink-0 mt-0.5" />
+                <span>Handcrafted with authentic Ethiopian techniques</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Check className="w-5 h-5 text-[--ethiopian-green] flex-shrink-0 mt-0.5" />
+                <span>30-day return policy</span>
+              </div>
+            </div>
+
+            {/* Product Details */}
+            {product.details && (
+              <div className="mt-8 pt-8 border-t border-[--linen-beige]">
+                <h4 className="mb-4">Product Details</h4>
+                <dl className="space-y-2 text-sm">
+                  {product.details.material && (
+                    <>
+                      <dt className="text-[--warm-grey]">Material:</dt>
+                      <dd className="mb-2">{product.details.material}</dd>
+                    </>
+                  )}
+                  {product.details.care && (
+                    <>
+                      <dt className="text-[--warm-grey]">Care:</dt>
+                      <dd className="mb-2">{product.details.care}</dd>
+                    </>
+                  )}
+                  {product.details.origin && (
+                    <>
+                      <dt className="text-[--warm-grey]">Origin:</dt>
+                      <dd>{product.details.origin}</dd>
+                    </>
+                  )}
+                </dl>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div>
+            <h2 className="mb-8">You Might Also Like</h2>
+            <ProductGrid products={relatedProducts} columns={4} />
+          </div>
+        )}
+      </Container>
+    </div>
+  );
+}
