@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Heart, ArrowLeft, Check } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
@@ -10,18 +10,61 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { getProductBySlug, getRelatedProducts } from '@/lib/products';
 import { formatPrice } from '@/lib/utils';
 import { useCart } from '@/hooks/useCart';
-import { Color, Size } from '@/lib/types';
+import { Color, Size, Product } from '@/lib/types';
+import { ProductImageZoom } from '@/components/product/ProductImageZoom';
 
 export default function ProductDetailPage() {
   const { slug } = useParams();
-  const product = getProductBySlug(slug || '');
   const { addToCart } = useCart();
 
-  const [selectedColor, setSelectedColor] = useState<Color | undefined>(product?.colors[0]);
-  const [selectedSize, setSelectedSize] = useState<Size | undefined>(product?.sizes[0]);
+  const [product, setProduct] = useState<Product | undefined>(undefined);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedColor, setSelectedColor] = useState<Color | undefined>(undefined);
+  const [selectedSize, setSelectedSize] = useState<Size | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    async function loadProduct() {
+      if (!slug) return;
+      setLoading(true);
+      try {
+        const fetchedProduct = await getProductBySlug(slug);
+        setProduct(fetchedProduct);
+
+        if (fetchedProduct) {
+          // Initialize selections
+          setSelectedColor(fetchedProduct.colors[0]);
+          setSelectedSize(fetchedProduct.sizes[0]);
+          setActiveImageIndex(0);
+
+          // Load related
+          const related = await getRelatedProducts(fetchedProduct.id);
+          setRelatedProducts(related);
+
+          console.log('Product loaded:', fetchedProduct);
+          console.log('Product images:', fetchedProduct.images);
+        }
+      } catch (error) {
+        console.error('Failed to load product', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProduct();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[--soft-cream]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[--azebot-gold]"></div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -34,14 +77,13 @@ export default function ProductDetailPage() {
     );
   }
 
-  const relatedProducts = getRelatedProducts(product.id);
   const price = product.salePrice || product.price;
   const hasDiscount = !!product.salePrice;
 
   const handleAddToCart = () => {
     setIsAdding(true);
     addToCart(product, quantity, selectedColor, selectedSize);
-    
+
     setTimeout(() => {
       setIsAdding(false);
       setShowSuccess(true);
@@ -69,14 +111,42 @@ export default function ProductDetailPage() {
         {/* Product Details */}
         <div className="grid md:grid-cols-2 gap-12 mb-16">
           {/* Gallery */}
-          <div className="space-y-4">
-            <div className="relative aspect-[3/4] bg-white rounded-lg overflow-hidden shadow-lg">
-              <img
-                src={product.images[0]}
+          <div className="relative aspect-[3/4] bg-white rounded-lg shadow-lg z-10 group">
+            {product.images.length > 0 ? (
+              <ProductImageZoom
+                image={product.images[activeImageIndex]}
                 alt={product.name}
-                className="absolute inset-0 w-full h-full object-cover"
               />
-            </div>
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
+                No Image Available
+              </div>
+            )}
+
+            {/* Thumbnail Gallery */}
+            {product.images.length > 1 && (
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4 z-20">
+                <div className="flex gap-2 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md overflow-x-auto max-w-full">
+                  {product.images.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveImageIndex(index)}
+                      className={`relative w-12 h-12 rounded-full overflow-hidden border-2 transition-all flex-shrink-0 ${activeImageIndex === index
+                        ? 'border-[--azebot-gold] scale-110'
+                        : 'border-transparent hover:border-[--azebot-gold]/50'
+                        }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`${product.name} view ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
 
           {/* Info */}
@@ -106,7 +176,7 @@ export default function ProductDetailPage() {
             </p>
 
             {/* Color Selector */}
-            {product.colors.length > 0 && (
+            {product.colors && product.colors.length > 0 && (
               <div className="mb-6">
                 <h4 className="mb-3">
                   Color: <span className="text-[--warm-grey]">{selectedColor?.name}</span>
@@ -116,11 +186,10 @@ export default function ProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        selectedColor?.hex === color.hex
-                          ? 'border-[--azebot-gold] scale-110'
-                          : 'border-[--warm-grey]/30 hover:border-[--azebot-gold]'
-                      }`}
+                      className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColor?.hex === color.hex
+                        ? 'border-[--azebot-gold] scale-110'
+                        : 'border-[--warm-grey]/30 hover:border-[--azebot-gold]'
+                        }`}
                       style={{ backgroundColor: color.hex }}
                       title={color.name}
                     />
@@ -130,7 +199,7 @@ export default function ProductDetailPage() {
             )}
 
             {/* Size Selector */}
-            {product.sizes.length > 0 && product.sizes[0] !== 'One Size' && (
+            {product.sizes && product.sizes.length > 0 && product.sizes[0] !== 'One Size' && (
               <div className="mb-6">
                 <h4 className="mb-3">Size</h4>
                 <div className="flex flex-wrap gap-2">
@@ -138,11 +207,10 @@ export default function ProductDetailPage() {
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border-2 rounded transition-all ${
-                        selectedSize === size
-                          ? 'border-[--azebot-gold] bg-[--azebot-gold] text-white'
-                          : 'border-[--warm-grey]/30 hover:border-[--azebot-gold]'
-                      }`}
+                      className={`px-4 py-2 border-2 rounded transition-all ${selectedSize === size
+                        ? 'border-[--azebot-gold] bg-[--azebot-gold] text-white'
+                        : 'border-[--warm-grey]/30 hover:border-[--azebot-gold] hover:text-[--azebot-gold]'
+                        }`}
                     >
                       {size}
                     </button>
@@ -157,14 +225,14 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-md border-2 border-[--warm-grey]/30 hover:border-[--azebot-gold] transition-colors"
+                  className="w-10 h-10 rounded-md border-2 border-[--warm-grey]/30 hover:border-[--azebot-gold] hover:text-[--azebot-gold] transition-colors"
                 >
                   -
                 </button>
                 <span className="w-12 text-center">{quantity}</span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 rounded-md border-2 border-[--warm-grey]/30 hover:border-[--azebot-gold] transition-colors"
+                  className="w-10 h-10 rounded-md border-2 border-[--warm-grey]/30 hover:border-[--azebot-gold] hover:text-[--azebot-gold] transition-colors"
                 >
                   +
                 </button>
@@ -234,13 +302,15 @@ export default function ProductDetailPage() {
         </div>
 
         {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div>
-            <h2 className="mb-8">You Might Also Like</h2>
-            <ProductGrid products={relatedProducts} columns={4} />
-          </div>
-        )}
-      </Container>
-    </div>
+        {
+          relatedProducts.length > 0 && (
+            <div>
+              <h2 className="mb-8">You Might Also Like</h2>
+              <ProductGrid products={relatedProducts} columns={4} />
+            </div>
+          )
+        }
+      </Container >
+    </div >
   );
 }

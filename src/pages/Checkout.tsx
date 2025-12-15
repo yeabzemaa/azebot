@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, Mail, CheckCircle } from 'lucide-react';
+import { Phone, Mail, CheckCircle, Smartphone, Globe, CreditCard, Building2, Wallet } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +10,7 @@ import { CartSummary } from '@/components/cart/CartSummary';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { sendOTP, verifyOTP } from '@/lib/verification';
+import { api } from '@/lib/api';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -22,6 +23,10 @@ export default function CheckoutPage() {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [orderNumber, setOrderNumber] = useState('');
+
+  // Payment Method State
+  const [paymentScope, setPaymentScope] = useState<'local' | 'international'>('local');
 
   // Shipping info
   const [fullName, setFullName] = useState('');
@@ -46,7 +51,7 @@ export default function CheckoutPage() {
   }, [isAuthenticated, navigate, requireAuth, user]);
 
   if (!isAuthenticated) {
-    return null; // Don't render checkout content until authenticated
+    return null;
   }
 
   if (cart.items.length === 0 && step !== 'complete') {
@@ -85,6 +90,37 @@ export default function CheckoutPage() {
     }
   };
 
+  const createOrder = async () => {
+    try {
+      const orderItems = cart.items.map(item => ({
+        product_id: item.product.id,
+        quantity: item.quantity,
+        color: item.selectedColor?.name || null,
+        size: item.selectedSize || null,
+      }));
+
+      const payload = {
+        email: contact, // Using verified contact
+        shipping_address: {
+          full_name: fullName,
+          address1,
+          address2,
+          city,
+          region,
+          phone
+        },
+        payment_method: paymentScope === 'local' ? 'bank_transfer' : 'stripe',
+        items: orderItems
+      };
+
+      const response = await api.post<{ order_number: string }>('/orders/checkout/', payload, true);
+      return response.order_number;
+    } catch (err: any) {
+      console.error('Order creation failed:', err);
+      throw new Error(err.message || 'Failed to create order');
+    }
+  };
+
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -96,18 +132,24 @@ export default function CheckoutPage() {
 
     setIsLoading(true);
     try {
+      // 1. Verify OTP (Auth check)
       const verified = await verifyOTP(contact, otp);
+
       if (verified) {
+        // 2. Place Order
+        const newOrderNumber = await createOrder();
+        setOrderNumber(newOrderNumber);
+
         setStep('complete');
         // Clear cart after successful order
         setTimeout(() => {
           clearCart();
-        }, 3000);
+        }, 1000);
       } else {
         setError('Invalid verification code. Please try again.');
       }
-    } catch (err) {
-      setError('Verification failed. Please try again.');
+    } catch (err: any) {
+      setError(err.message || 'Verification or Order failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -121,9 +163,39 @@ export default function CheckoutPage() {
             <CheckCircle className="w-12 h-12" />
           </div>
           <h1 className="mb-4">Order Confirmed!</h1>
+          {orderNumber && <p className="text-xl font-bold mb-4">Order #{orderNumber}</p>}
+
           <p className="text-[--warm-grey] mb-8 max-w-md mx-auto">
-            Thank you for your order. We&apos;ve sent a confirmation to {contact}. Your order will be shipped soon.
+            {paymentScope === 'local'
+              ? `Thank you for your order. Please complete your bank transfer using the details below. We've sent instructions to ${contact}.`
+              : `Thank you for your order. We've sent a confirmation to ${contact}. Your order will be shipped soon.`
+            }
           </p>
+
+          {paymentScope === 'local' && (
+            <div className="bg-white p-6 rounded-lg shadow-sm max-w-md mx-auto mb-8 border border-[--linen-beige]">
+              <h3 className="text-lg font-semibold mb-4 text-[--deep-charcoal]">Bank Transfer Details</h3>
+              <div className="space-y-4 text-left">
+                <div className="flex justify-between border-b border-[--linen-beige] pb-2">
+                  <span className="text-[--warm-grey]">Bank:</span>
+                  <span className="font-medium">Commercial Bank of Ethiopia</span>
+                </div>
+                <div className="flex justify-between border-b border-[--linen-beige] pb-2">
+                  <span className="text-[--warm-grey]">Account Name:</span>
+                  <span className="font-medium">Azebot Store PLC</span>
+                </div>
+                <div className="flex justify-between border-b border-[--linen-beige] pb-2">
+                  <span className="text-[--warm-grey]">Account Number:</span>
+                  <span className="font-medium">1000123456789</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[--warm-grey]">Telebirr:</span>
+                  <span className="font-medium">+251 911 22 33 44</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-4 justify-center">
             <Button variant="primary" onClick={() => navigate('/')}>
               Back to Home
@@ -146,7 +218,78 @@ export default function CheckoutPage() {
           {/* Checkout Form */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg p-6 mb-6">
-              <h3 className="mb-6">Shipping Information</h3>
+              {/* Payment Scope Selection */}
+              <h3 className="mb-4">Payment Method</h3>
+              <div className="grid sm:grid-cols-2 gap-4 mb-8">
+                <button
+                  type="button"
+                  onClick={() => setPaymentScope('local')}
+                  className={`relative p-4 rounded-xl border-2 text-left transition-all ${paymentScope === 'local'
+                    ? 'border-[--azebot-gold] bg-[--soft-cream]'
+                    : 'border-[--linen-beige] hover:border-[--azebot-gold]/50'
+                    }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`p-2 rounded-full ${paymentScope === 'local' ? 'bg-[--azebot-gold] text-white' : 'bg-[--linen-beige] text-[--warm-grey]'}`}>
+                      <Building2 className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold text-lg text-[--deep-charcoal]">Local</span>
+                  </div>
+                  <p className="text-sm text-[--warm-grey]">Direct Bank Transfer / Telebirr</p>
+                  {paymentScope === 'local' && (
+                    <div className="absolute top-2 right-2">
+                      <CheckCircle className="w-5 h-5 text-[--azebot-gold]" />
+                    </div>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPaymentScope('international')}
+                  className={`relative p-4 rounded-xl border-2 text-left transition-all ${paymentScope === 'international'
+                    ? 'border-[--azebot-gold] bg-[--soft-cream]'
+                    : 'border-[--linen-beige] hover:border-[--azebot-gold]/50'
+                    }`}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className={`p-2 rounded-full ${paymentScope === 'international' ? 'bg-[--azebot-gold] text-white' : 'bg-[--linen-beige] text-[--warm-grey]'}`}>
+                      <Globe className="w-5 h-5" />
+                    </div>
+                    <span className="font-semibold text-lg text-[--deep-charcoal]">International</span>
+                  </div>
+                  <p className="text-sm text-[--warm-grey]">Credit Card (Stripe)</p>
+                  {paymentScope === 'international' && (
+                    <div className="absolute top-2 right-2">
+                      <CheckCircle className="w-5 h-5 text-[--azebot-gold]" />
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              {/* Payment Details Preview */}
+              {paymentScope === 'local' ? (
+                <div className="mb-8 p-4 bg-[--soft-cream] rounded-lg border border-[--azebot-gold]/20">
+                  <h4 className="flex items-center gap-2 font-medium text-[--deep-charcoal] mb-2">
+                    <Wallet className="w-4 h-4 text-[--azebot-gold]" />
+                    Bank Transfer Instructions
+                  </h4>
+                  <p className="text-sm text-[--warm-grey] leading-relaxed">
+                    You will need to transfer the total amount to our Commercial Bank of Ethiopia or Telebirr account. Your order will be processed once we receive the payment confirmation. Account details will be shown after you place the order.
+                  </p>
+                </div>
+              ) : (
+                <div className="mb-8 p-4 bg-[--soft-cream] rounded-lg border border-[--azebot-gold]/20">
+                  <h4 className="flex items-center gap-2 font-medium text-[--deep-charcoal] mb-2">
+                    <CreditCard className="w-4 h-4 text-[--azebot-gold]" />
+                    Secure Payment via Stripe
+                  </h4>
+                  <p className="text-sm text-[--warm-grey] leading-relaxed">
+                    Pay securely using your Visa, Mastercard, or American Express. Redirects to Stripe's secure checkout (Coming Soon - Mock Integration).
+                  </p>
+                </div>
+              )}
+
+              <h3 className="mb-6 pt-6 border-t border-[--linen-beige]">Shipping Information</h3>
               <form onSubmit={handleSendOTP} className="space-y-4">
                 <Input
                   label="Full Name"
@@ -202,7 +345,7 @@ export default function CheckoutPage() {
                 <div className="pt-4 border-t border-[--linen-beige]">
                   <h3 className="mb-4">Contact Verification</h3>
                   <p className="text-sm text-[--warm-grey] mb-4">
-                    We&apos;ll send a verification code to confirm your order. For demo purposes, use code: <strong>123456</strong>
+                    We&apos;ll send a verification code to confirm your order.
                   </p>
 
                   <div className="flex gap-4 mb-4">
@@ -258,7 +401,7 @@ export default function CheckoutPage() {
                     loading={isLoading}
                     className="w-full"
                   >
-                    Send Verification Code
+                    Proceed to Verify
                   </Button>
                 )}
               </form>
@@ -305,7 +448,7 @@ export default function CheckoutPage() {
                       loading={isLoading}
                       className="flex-1"
                     >
-                      Verify & Place Order
+                      {paymentScope === 'international' ? 'Pay with Stripe' : 'Place Order'}
                     </Button>
                   </div>
                 </form>

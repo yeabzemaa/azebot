@@ -1,49 +1,83 @@
+import { api } from './api';
+import { useAuthStore } from '@/store/useAuthStore';
+
+interface OtpResponse {
+  access: string;
+  refresh: string;
+  user: {
+    id: string;
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+  };
+}
+
 export const sendOTP = async (contact: string): Promise<boolean> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // In dev, log the "sent" OTP
-  console.log(`✉️ OTP sent to ${contact}: 123456`);
-  
-  // Store contact in session storage
-  if (typeof window !== 'undefined') {
-    sessionStorage.setItem('otp_contact', contact);
-    sessionStorage.setItem('otp_sent_at', Date.now().toString());
+  try {
+    // Determine if email or phone (simple check)
+    const isEmail = contact.includes('@');
+    const payload = isEmail ? { email: contact } : { phone: contact };
+
+    await api.post('/auth/send-otp/', payload);
+
+    // Store contact in session storage for UI persistence
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('otp_contact', contact);
+    }
+    return true;
+  } catch (error) {
+    console.error('Failed to send OTP:', error);
+    return false;
   }
-  
-  return true;
 };
 
-export const verifyOTP = async (contact: string, otp: string): Promise<boolean> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  if (typeof window === 'undefined') return false;
-  
-  const storedContact = sessionStorage.getItem('otp_contact');
-  
-  // Accept specific test code (123456) or any 6-digit code for demo purposes
-  if (contact === storedContact && (otp === '123456' || /^\d{6}$/.test(otp))) {
-    sessionStorage.setItem('verified_contact', contact);
-    return true;
+export const verifyOTP = async (contact: string, code: string): Promise<boolean> => {
+  try {
+    const isEmail = contact.includes('@');
+    const payload = {
+      [isEmail ? 'email' : 'phone']: contact,
+      code: code
+    };
+
+    const response = await api.post<OtpResponse>('/auth/verify-otp/', payload);
+
+    if (response.access && response.user) {
+      // Map backend user to frontend user
+      const user = {
+        id: response.user.id,
+        name: [response.user.first_name, response.user.last_name].filter(Boolean).join(' ') || contact.split('@')[0],
+        email: response.user.email,
+        phone: response.user.phone
+      };
+
+      // Update global auth store
+      useAuthStore.getState().setAuth(user, response.access, response.refresh);
+
+      // Clear session storage
+      sessionStorage.removeItem('otp_contact');
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Failed to verify OTP:', error);
+    return false;
   }
-  
-  return false;
 };
 
 export const isVerified = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  return !!sessionStorage.getItem('verified_contact');
+  // Check global auth store
+  return useAuthStore.getState().isAuthenticated;
 };
 
 export const getVerifiedContact = (): string | null => {
-  if (typeof window === 'undefined') return null;
-  return sessionStorage.getItem('verified_contact');
+  const user = useAuthStore.getState().user;
+  return user?.email || user?.phone || null;
 };
 
 export const clearVerification = (): void => {
-  if (typeof window === 'undefined') return;
-  sessionStorage.removeItem('otp_contact');
-  sessionStorage.removeItem('otp_sent_at');
-  sessionStorage.removeItem('verified_contact');
+  // Check if we want to logout? or just clear local session?
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('otp_contact');
+  }
 };

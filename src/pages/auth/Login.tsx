@@ -2,19 +2,15 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useAuth } from '@/hooks/useAuth';
-import { TibebPattern, EthiopianCross } from '@/components/ui/EthiopianPatterns';
+import { sendOTP } from '@/lib/verification';
+import { EthiopianCross } from '@/components/ui/EthiopianPatterns';
 
 export default function LoginPage() {
     const navigate = useNavigate();
-    const { login } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+    const [contact, setContact] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -24,14 +20,12 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
-            const success = await login(email, password);
+            const success = await sendOTP(contact);
             if (success) {
-                // Check for redirect URL
-                const redirectUrl = sessionStorage.getItem('auth_redirect');
-                sessionStorage.removeItem('auth_redirect');
-                navigate(redirectUrl || '/');
+                // Navigate to OTP verification
+                navigate('/verify-otp', { state: { contact } });
             } else {
-                setError('Invalid email or password. Please try again.');
+                setError('Failed to send verification code. Please try again.');
             }
         } catch (err) {
             setError('An error occurred. Please try again.');
@@ -41,7 +35,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-warm flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pattern-woven">
+        <div className="min-h-screen bg-[--linen-beige] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pattern-woven">
             <div className="max-w-md w-full">
                 {/* Card */}
                 <div className="cultural-card shadow-2xl">
@@ -52,8 +46,8 @@ export default function LoginPage() {
                                 <span className="text-white text-3xl font-elegant">A</span>
                             </div>
                         </div>
-                        <h1 className="text-3xl font-elegant text-[--deep-charcoal] mb-2">Welcome Back</h1>
-                        <p className="text-[--warm-grey]">Sign in to continue shopping</p>
+                        <h1 className="text-3xl font-elegant text-gray-900 mb-2">Welcome Back</h1>
+                        <p className="text-gray-600">Sign in with your email or phone</p>
                     </div>
 
                     {/* Decorative Divider */}
@@ -72,65 +66,23 @@ export default function LoginPage() {
 
                     {/* Login Form */}
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Email Field */}
+                        {/* Email/Phone Field */}
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-[--deep-charcoal] mb-2">
-                                Email Address
+                            <label htmlFor="contact" className="block text-sm font-medium text-gray-900 mb-2">
+                                Email or Phone
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[--warm-grey]" />
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    onChange={setEmail}
-                                    placeholder="you@example.com"
+                                    id="contact"
+                                    type="text"
+                                    value={contact}
+                                    onChange={setContact}
+                                    placeholder="Enter email or phone number"
                                     className="pl-10"
                                     required
                                 />
                             </div>
-                        </div>
-
-                        {/* Password Field */}
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-[--deep-charcoal] mb-2">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[--warm-grey]" />
-                                <Input
-                                    id="password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onChange={setPassword}
-                                    placeholder="••••••••"
-                                    className="pl-10 pr-10"
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[--warm-grey] hover:text-[--azebot-gold] transition-colors"
-                                >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Remember Me & Forgot Password */}
-                        <div className="flex items-center justify-between">
-                            <label className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    checked={rememberMe}
-                                    onChange={(e) => setRememberMe(e.target.checked)}
-                                    className="w-4 h-4 text-[--azebot-gold] border-[--linen-beige] rounded focus:ring-[--azebot-gold]"
-                                />
-                                <span className="ml-2 text-sm text-[--warm-grey]">Remember me</span>
-                            </label>
-                            <Link to="/forgot-password" className="text-sm text-[--azebot-gold] hover:text-[--amber-gold] transition-colors">
-                                Forgot password?
-                            </Link>
                         </div>
 
                         {/* Submit Button */}
@@ -140,8 +92,9 @@ export default function LoginPage() {
                             size="lg"
                             className="w-full hover-lift"
                             disabled={isLoading}
+                            icon={<ArrowRight className="w-4 h-4 ml-2" />}
                         >
-                            {isLoading ? 'Signing in...' : 'Sign In'}
+                            {isLoading ? 'Sending Code...' : 'Send Verification Code'}
                         </Button>
                     </form>
 
@@ -157,7 +110,7 @@ export default function LoginPage() {
 
                     {/* Social Login */}
                     <div className="grid grid-cols-2 gap-4">
-                        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-[--linen-beige] rounded-lg hover:bg-[--linen-beige] transition-colors">
+                        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors">
                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -166,7 +119,7 @@ export default function LoginPage() {
                             </svg>
                             <span className="text-sm font-medium text-[--deep-charcoal]">Google</span>
                         </button>
-                        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-[--linen-beige] rounded-lg hover:bg-[--linen-beige] transition-colors">
+                        <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors">
                             <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
                                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                             </svg>

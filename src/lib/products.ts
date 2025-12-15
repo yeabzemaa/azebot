@@ -1,81 +1,193 @@
-import { Product, FilterState } from './types';
-import { productsData } from '@/data/products';
+import { Product, FilterState, Color, Size } from './types';
+import { api } from './api';
 
-// Image mappings from Unsplash
-const productImages: Record<string, string[]> = {
-  'prod_001': ['https://images.unsplash.com/photo-1633980990916-74317cba1ea3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxldGhpb3BpYW4lMjB0cmFkaXRpb25hbCUyMGRyZXNzJTIwd2hpdGV8ZW58MXx8fHwxNzY1Mjg0NTg4fDA&ixlib=rb-4.1.0&q=80&w=1080'],
-  'prod_002': ['https://images.unsplash.com/photo-1741173826628-199d13c4914a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGl0ZSUyMGNvdHRvbiUyMHNjYXJmfGVufDF8fHx8MTc2NTI4NDU4OHww&ixlib=rb-4.1.0&q=80&w=1080'],
-  'prod_003': ['https://images.unsplash.com/photo-1565728769229-e6e5b989a824?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW5zJTIwbGluZW4lMjB0dW5pYyUyMGJlaWdlfGVufDF8fHx8MTc2NTI4NDU4OXww&ixlib=rb-4.1.0&q=80&w=1080'],
-  'prod_004': ['https://images.unsplash.com/photo-1636357724570-a619b5f47be5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxraWRzJTIwd2hpdGUlMjBkcmVzc3xlbnwxfHx8fDE3NjUyODQ1ODl8MA&ixlib=rb-4.1.0&q=80&w=1080'],
-  'prod_005': ['https://images.unsplash.com/photo-1762331974787-76476e26c7a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnb2xkJTIwY3Jvc3MlMjBwZW5kYW50JTIwamV3ZWxyeXxlbnwxfHx8fDE3NjUyODQ1ODl8MA&ixlib=rb-4.1.0&q=80&w=1080'],
-  'prod_006': ['https://images.unsplash.com/photo-1598122666068-59b41e0a3193?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxldGhpb3BpYW4lMjB0cmFkaXRpb25hbCUyMGNsb3RoaW5nfGVufDF8fHx8MTc2NTI4NDU5MXww&ixlib=rb-4.1.0&q=80&w=1080'],
-  'prod_007': ['https://images.unsplash.com/photo-1565728769229-e6e5b989a824?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtZW5zJTIwbGluZW4lMjB0dW5pYyUyMGJlaWdlfGVufDF8fHx8MTc2NTI4NDU4OXww&ixlib=rb-4.1.0&q=80&w=1080'],
-  'prod_008': ['https://images.unsplash.com/photo-1601330862030-1e08c703ac04?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3b3ZlbiUyMGJhc2tldCUyMGJhZ3xlbnwxfHx8fDE3NjUyODQ1OTB8MA&ixlib=rb-4.1.0&q=80&w=1080'],
-};
+// Types for API Responses
+interface ApiProduct {
+  id: string;
+  product_id: string;
+  name: string;
+  slug: string;
+  price: string;
+  sale_price: string | null;
+  current_price: string;
+  is_on_sale: boolean;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  // API output doesn't seem to have valid main_image top-level always, or we should prefer images array
+  main_image?: string;
+  rating: string | null;
+  review_count: number;
+  in_stock: boolean;
+  featured: boolean;
+  is_new: boolean;
+  description?: string;
+  details?: Record<string, string>;
 
-// Get all products with images
-export function getAllProducts(): Product[] {
-  const products = productsData.products.map(product => ({
-    ...product,
-    images: productImages[product.id] || [productImages['prod_001'][0]],
-  }));
-  return products;
+  // New structure from User
+  product_type?: string;
+  images: Array<{
+    id: string;
+    url: string;
+    alt_text: string;
+    is_primary: boolean;
+  }>;
+  colors?: Array<{
+    name: string;
+    hex_code: string;
+  }>;
+  sizes?: Array<{
+    size_label: string;
+  }>;
 }
 
-// Get featured products
-export function getFeaturedProducts(): Product[] {
-  return getAllProducts().filter(product => product.featured);
+interface ApiProductListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ApiProduct[];
 }
 
-// Get new arrivals
-export function getNewProducts(): Product[] {
-  return getAllProducts().filter(product => product.new);
-}
+// Adapter: Convert API Product to Frontend Product
+function mapApiProductToProduct(apiProduct: ApiProduct): Product {
+  // Map category string to union type
+  const categoryMap: Record<string, 'women' | 'men' | 'kids' | 'accessories'> = {
+    'Women': 'women',
+    'Men': 'men',
+    'Kids': 'kids',
+    'Accessories': 'accessories',
+    'women': 'women',
+    'men': 'men',
+    'kids': 'kids',
+    'accessories': 'accessories'
+  };
 
-// Get product by slug
-export function getProductBySlug(slug: string): Product | undefined {
-  return getAllProducts().find(product => product.slug === slug);
-}
-
-// Get product by ID
-export function getProductById(id: string): Product | undefined {
-  return getAllProducts().find(product => product.id === id);
-}
-
-// Filter products
-export function filterProducts(filters: Partial<FilterState>): Product[] {
-  let products = getAllProducts();
-
-  if (filters.categories && filters.categories.length > 0) {
-    products = products.filter(product =>
-      filters.categories!.includes(product.category)
-    );
+  // Construct images array
+  // If images array exists and has length, use it. Otherwise fallback to main_image if present.
+  let images: string[] = [];
+  if (apiProduct.images && apiProduct.images.length > 0) {
+    images = apiProduct.images.map(img => img.url);
+  } else if (apiProduct.main_image) {
+    images = [apiProduct.main_image];
   }
 
-  if (filters.types && filters.types.length > 0) {
-    products = products.filter(product =>
-      filters.types!.includes(product.type)
-    );
-  }
+  // Map Colors
+  const colors: Color[] = apiProduct.colors?.map(c => ({
+    name: c.name,
+    hex: c.hex_code
+  })) || [{ name: 'Standard', hex: '#FFFFFF' }];
 
-  if (filters.priceRange) {
-    const [min, max] = filters.priceRange;
-    products = products.filter(product => {
-      const price = product.salePrice || product.price;
-      return price >= min && price <= max;
-    });
-  }
+  // Map Sizes
+  const sizes: Size[] = (apiProduct.sizes?.map(s => s.size_label as Size)) || ['One Size'];
 
-  if (filters.sizes && filters.sizes.length > 0) {
-    products = products.filter(product =>
-      product.sizes.some(size => filters.sizes!.includes(size))
-    );
-  }
-
-  return products;
+  return {
+    id: apiProduct.product_id || apiProduct.id,
+    name: apiProduct.name,
+    slug: apiProduct.slug,
+    description: apiProduct.description || '',
+    price: parseFloat(apiProduct.price),
+    salePrice: apiProduct.sale_price ? parseFloat(apiProduct.sale_price) : undefined,
+    images: images,
+    category: categoryMap[apiProduct.category?.name] || 'women', // Handle object or string safely if needed
+    type: (apiProduct.product_type as any) || 'dress',
+    colors: colors,
+    sizes: sizes,
+    inStock: apiProduct.in_stock,
+    featured: apiProduct.featured,
+    new: apiProduct.is_new,
+    rating: apiProduct.rating ? parseFloat(apiProduct.rating) : 0,
+    reviewCount: apiProduct.review_count,
+    details: apiProduct.details || {}
+  };
 }
 
-// Sort products
+// --- Async API Functions ---
+
+export async function getAllProducts(filters?: Partial<FilterState>): Promise<Product[]> {
+  try {
+    // Construct query params from filters
+    const params = new URLSearchParams();
+
+    if (filters?.categories?.length) {
+      // API expects single 'category' usually, or multiple? 
+      // Based on typical Django filters, usually ?category=women
+      // If multiple, maybe loop. Let's assume single for now or take the first.
+      // Or if the API supports ?category__in=...
+      // Let's stick to appending multiple 'category' keys if the API supports it (arrays), 
+      // or just one.
+      filters.categories.forEach(c => params.append('category', c));
+    }
+
+    if (filters?.types?.length) {
+      filters.types.forEach(t => params.append('type', t));
+    }
+
+    if (filters?.priceRange) {
+      const [min, max] = filters.priceRange;
+      if (min > 0) params.append('price_min', min.toString());
+      if (max < 500) params.append('price_max', max.toString()); // Only send if constrained
+    }
+
+    if (filters?.colors?.length) {
+      filters.colors.forEach(c => params.append('color', c));
+    }
+
+    if (filters?.sizes?.length) {
+      filters.sizes.forEach(s => params.append('size', s));
+    }
+
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
+
+    const response = await api.get<ApiProductListResponse>(`/products/?${params.toString()}`);
+    return response.results.map(mapApiProductToProduct);
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    return [];
+  }
+}
+
+export async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    const response = await api.get<ApiProductListResponse>('/products/featured/');
+    return response.results.map(mapApiProductToProduct);
+  } catch (error) {
+    console.error('Failed to fetch featured products:', error);
+    return [];
+  }
+}
+
+export async function getNewProducts(): Promise<Product[]> {
+  try {
+    const response = await api.get<ApiProductListResponse>('/products/?ordering=-created_at');
+    return response.results.map(mapApiProductToProduct);
+  } catch (error) {
+    console.error('Failed to fetch new products:', error);
+    return [];
+  }
+}
+
+export async function getProductBySlug(slug: string): Promise<Product | undefined> {
+  try {
+    // Try explicit details endpoint
+    const apiProduct = await api.get<ApiProduct>(`/products/${slug}/`);
+    return mapApiProductToProduct(apiProduct);
+  } catch (error) {
+    console.error(`Failed to fetch product ${slug}:`, error);
+    return undefined;
+  }
+}
+
+export async function getRelatedProducts(productId: string, limit: number = 4): Promise<Product[]> {
+  // Placeholder logic: Fetch list and filter client side or use API specific endpoint
+  // For now, just return featured as related
+  return getFeaturedProducts();
+}
+
+// Client-side sorter helper
 export function sortProducts(
   products: Product[],
   sortBy: 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'rating'
@@ -103,17 +215,4 @@ export function sortProducts(
     default:
       return sorted.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
   }
-}
-
-// Get related products
-export function getRelatedProducts(productId: string, limit: number = 4): Product[] {
-  const product = getProductById(productId);
-  if (!product) return [];
-
-  const allProducts = getAllProducts();
-  const related = allProducts
-    .filter(p => p.id !== productId && p.category === product.category)
-    .slice(0, limit);
-
-  return related;
 }

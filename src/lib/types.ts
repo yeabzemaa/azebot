@@ -84,4 +84,5 @@ export interface FilterState {
   priceRange: [number, number];
   colors: string[];
   sizes: Size[];
+  search?: string;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { FilterState, Size } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +19,11 @@ export function ProductFilter({
   isMobile = false,
 }: ProductFilterProps) {
   const [localFilters, setLocalFilters] = useState(filters);
+
+  // Sync with parent state (e.g. URL params)
+  useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
 
   const categories = [
     { value: 'women', label: 'Women' },
@@ -138,11 +143,10 @@ export function ProductFilter({
             <button
               key={size}
               onClick={() => handleSizeToggle(size)}
-              className={`px-3 py-1.5 text-sm rounded border-2 transition-colors ${
-                localFilters.sizes.includes(size)
-                  ? 'border-[--azebot-gold] bg-[--azebot-gold] text-white'
-                  : 'border-[--warm-grey]/30 hover:border-[--azebot-gold]'
-              }`}
+              className={`px-3 py-1.5 text-sm rounded border-2 transition-colors ${localFilters.sizes.includes(size)
+                ? 'border-[--azebot-gold] bg-[--azebot-gold] text-white'
+                : 'border-[--warm-grey]/30 hover:border-[--azebot-gold] hover:text-[--azebot-gold]'
+                }`}
             >
               {size}
             </button>

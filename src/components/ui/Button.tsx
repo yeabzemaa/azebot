@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 
 interface ButtonProps {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'premium';
   size?: 'sm' | 'md' | 'lg';
   icon?: ReactNode;
   iconPosition?: 'left' | 'right';
@@ -27,14 +27,15 @@ export function Button({
   type = 'button',
 }: ButtonProps) {
   const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed';
-  
+
   const variants = {
-    primary: 'bg-[--azebot-gold] text-white hover:opacity-90 active:scale-95',
+    primary: 'bg-[--azebot-gold] text-[--deep-charcoal] hover:opacity-90 active:scale-95',
     secondary: 'bg-[--ethiopian-green] text-white hover:opacity-90 active:scale-95',
     outline: 'border-2 border-[--azebot-gold] text-[--azebot-gold] hover:bg-[--azebot-gold] hover:text-white',
     ghost: 'text-[--deep-charcoal] hover:bg-[--linen-beige]',
+    premium: 'bg-gradient-to-r from-[--azebot-gold] to-[--amber-gold] text-[--deep-charcoal] shadow-lg hover:shadow-xl hover:-translate-y-0.5 border-none',
   };
-  
+
   const sizes = {
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-6 py-2.5',

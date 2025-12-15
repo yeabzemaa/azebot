@@ -6,7 +6,12 @@ interface HeroProps {
   title: string;
   subtitle: string;
   backgroundImage: string;
-  ctaButtons?: Array<{ text: string; href: string; variant?: 'primary' | 'secondary' | 'outline' }>;
+  ctaButtons?: Array<{
+    text: string;
+    href: string;
+    variant?: 'primary' | 'secondary' | 'outline' | 'premium';
+    icon?: React.ReactNode;
+  }>;
   height?: 'small' | 'medium' | 'large';
 }
 
@@ -54,7 +59,9 @@ export function Hero({
                 <Button
                   variant={button.variant || 'primary'}
                   size="lg"
-                  className="min-w-[200px] hover-lift"
+                  className="min-w-[200px] hover-lift group"
+                  icon={button.icon}
+                  iconPosition="right"
                 >
                   {button.text}
                 </Button>

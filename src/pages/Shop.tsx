@@ -8,12 +8,13 @@ import { ProductGrid } from '@/components/product/ProductGrid';
 import { ProductFilter } from '@/components/product/ProductFilter';
 import { ProductSort } from '@/components/product/ProductSort';
 import { Button } from '@/components/ui/Button';
-import { filterProducts, sortProducts, getAllProducts } from '@/lib/products';
-import { FilterState } from '@/lib/types';
+import { sortProducts, getAllProducts } from '@/lib/products';
+import { FilterState, Product } from '@/lib/types';
 
 export default function ShopPage() {
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
+  const searchParam = searchParams.get('search'); // Capture search if present
 
   const [filters, setFilters] = useState<FilterState>({
     categories: categoryParam ? [categoryParam] : [],
@@ -21,10 +22,13 @@ export default function ShopPage() {
     priceRange: [0, 500],
     colors: [],
     sizes: [],
+    search: searchParam || undefined
   });
 
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'newest' | 'rating'>('featured');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Update filters when URL parameter changes
   useEffect(() => {
@@ -33,8 +37,30 @@ export default function ShopPage() {
     }
   }, [categoryParam]);
 
-  const filteredProducts = filterProducts(filters);
-  const sortedProducts = sortProducts(filteredProducts, sortBy);
+  // Fetch products when filters change
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      try {
+        const fetchedProducts = await getAllProducts(filters);
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error('Error fetching filtered products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Debounce slightly to avoid rapid API calls on slider change
+    const timeoutId = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [filters]);
+
+  // Sort products client-side for now
+  const sortedProducts = sortProducts(products, sortBy);
 
   return (
     <div className="min-h-screen bg-[--soft-cream]">
@@ -44,7 +70,7 @@ export default function ShopPage() {
           <div className="py-8">
             <h1 className="mb-2">Shop</h1>
             <p className="text-[--warm-grey]">
-              Discover our collection of authentic Ethiopian clothing
+              {filters.categories.length > 0 ? `Browsing ${filters.categories.join(', ')}` : 'Discover our collection of authentic Ethiopian clothing'}
             </p>
           </div>
         </Container>
@@ -78,7 +104,7 @@ export default function ShopPage() {
                   Filters
                 </Button>
                 <p className="text-sm text-[--warm-grey]">
-                  {sortedProducts.length} {sortedProducts.length === 1 ? 'product' : 'products'}
+                  {loading ? 'Loading...' : `${sortedProducts.length} ${sortedProducts.length === 1 ? 'product' : 'products'}`}
                 </p>
               </div>
 
@@ -86,7 +112,31 @@ export default function ShopPage() {
             </div>
 
             {/* Products Grid */}
-            <ProductGrid products={sortedProducts} />
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[--azebot-gold]"></div>
+              </div>
+            ) : sortedProducts.length > 0 ? (
+              <ProductGrid products={sortedProducts} />
+            ) : (
+              <div className="text-center py-20 bg-white rounded-lg border border-[--linen-beige]">
+                <p className="text-lg text-[--warm-grey]">No products found matching your criteria.</p>
+                <Button
+                  variant="ghost"
+                  className="mt-4"
+                  onClick={() => setFilters({
+                    categories: [],
+                    types: [],
+                    priceRange: [0, 500],
+                    colors: [],
+                    sizes: []
+                  })}
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            )}
+
           </div>
         </div>
       </Container>
