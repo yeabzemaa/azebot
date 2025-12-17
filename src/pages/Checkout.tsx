@@ -10,7 +10,7 @@ import { CartSummary } from '@/components/cart/CartSummary';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { sendOTP, verifyOTP } from '@/lib/verification';
-import { api } from '@/lib/api';
+import { api, ENDPOINTS } from '@/lib/api';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -113,7 +113,7 @@ export default function CheckoutPage() {
         items: orderItems
       };
 
-      const response = await api.post<{ order_number: string }>('/orders/checkout/', payload, true);
+      const response = await api.post<{ order_number: string }>(ENDPOINTS.ORDERS.CHECKOUT, payload, true);
       return response.order_number;
     } catch (err: any) {
       console.error('Order creation failed:', err);

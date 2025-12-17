@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, ENDPOINTS } from './api';
 import { useAuthStore } from '@/store/useAuthStore';
 
 interface OtpResponse {
@@ -19,15 +19,24 @@ export const sendOTP = async (contact: string): Promise<boolean> => {
     const isEmail = contact.includes('@');
     const payload = isEmail ? { email: contact } : { phone: contact };
 
-    await api.post('/auth/send-otp/', payload);
+    console.log('[sendOTP] Sending OTP to:', contact, 'Payload:', payload);
+
+    const response = await api.post(ENDPOINTS.AUTH.SEND_OTP, payload);
+    console.log('[sendOTP] Success! Response:', response);
 
     // Store contact in session storage for UI persistence
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('otp_contact', contact);
+      sessionStorage.setItem('otp_sent_at', Date.now().toString());
     }
     return true;
-  } catch (error) {
-    console.error('Failed to send OTP:', error);
+  } catch (error: any) {
+    console.error('[sendOTP] Failed to send OTP');
+    console.error('[sendOTP] Error details:', {
+      message: error?.message,
+      status: error?.status,
+      response: error
+    });
     return false;
   }
 };
@@ -40,7 +49,11 @@ export const verifyOTP = async (contact: string, code: string): Promise<boolean>
       code: code
     };
 
-    const response = await api.post<OtpResponse>('/auth/verify-otp/', payload);
+    console.log('[verifyOTP] Verifying OTP for:', contact, 'Code length:', code.length);
+    console.log('[verifyOTP] Payload:', payload);
+
+    const response = await api.post<OtpResponse>(ENDPOINTS.AUTH.VERIFY_OTP, payload);
+    console.log('[verifyOTP] Success! Response:', response);
 
     if (response.access && response.user) {
       // Map backend user to frontend user
@@ -51,16 +64,24 @@ export const verifyOTP = async (contact: string, code: string): Promise<boolean>
         phone: response.user.phone
       };
 
+      console.log('[verifyOTP] Setting auth for user:', user);
       // Update global auth store
       useAuthStore.getState().setAuth(user, response.access, response.refresh);
 
       // Clear session storage
       sessionStorage.removeItem('otp_contact');
+      sessionStorage.removeItem('otp_sent_at');
       return true;
     }
+    console.error('[verifyOTP] Invalid response - missing access token or user');
     return false;
-  } catch (error) {
-    console.error('Failed to verify OTP:', error);
+  } catch (error: any) {
+    console.error('[verifyOTP] Failed to verify OTP');
+    console.error('[verifyOTP] Error details:', {
+      message: error?.message,
+      status: error?.status,
+      response: error
+    });
     return false;
   }
 };

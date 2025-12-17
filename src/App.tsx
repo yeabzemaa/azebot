@@ -15,6 +15,7 @@ import ContactPage from './pages/Contact';
 import LoginPage from './pages/auth/Login';
 import RegisterPage from './pages/auth/Register';
 import VerifyOTPPage from './pages/auth/VerifyOTP';
+import WishlistPage from './pages/Wishlist';
 import ProfilePage from './pages/Profile';
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-otp" element={<VerifyOTPPage />} />
+            <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </main>

@@ -1,5 +1,39 @@
 const API_BASE_URL = 'http://52.2.218.198/api/v1';
 
+export const ENDPOINTS = {
+    AUTH: {
+        SEND_OTP: '/auth/send-otp/',
+        VERIFY_OTP: '/auth/verify-otp/',
+    },
+    PRODUCTS: {
+        LIST: '/products/',
+        FEATURED: '/products/featured/',
+        DETAILS: (slug: string) => `/products/${slug}/`,
+        REVIEWS: (slug: string) => `/products/${slug}/reviews/`,
+        ADD_REVIEW: (slug: string) => `/products/${slug}/add_review/`,
+    },
+    CATEGORIES: {
+        LIST: '/categories/',
+        DETAILS: (slug: string) => `/categories/${slug}/`,
+    },
+    CART: {
+        GET: '/cart/',
+        ADD: '/cart/add/',
+    },
+    WISHLIST: {
+        GET: '/wishlist/',
+        TOGGLE: '/wishlist/toggle/',
+    },
+    FINANCES: {
+        PAYMENT_INFO: '/finances/payment-info/',
+    },
+    ORDERS: {
+        CHECKOUT: '/orders/checkout/',
+        DETAILS: (orderNumber: string) => `/orders/${orderNumber}/`,
+        MY_ORDERS: '/orders/my-orders/',
+    }
+} as const;
+
 export interface ApiError {
     message: string;
     status: number;
@@ -22,6 +56,7 @@ export const clearAuthTokens = () => {
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
+        console.error('[API Error] Status:', response.status, 'Body:', errorBody);
         const message = errorBody.message || errorBody.detail || 'An error occurred';
         throw { message, status: response.status } as ApiError;
     }

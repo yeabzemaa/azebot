@@ -17,21 +17,28 @@ export default function VerifyOTPPage() {
     const [contact, setContact] = useState('');
 
     useEffect(() => {
-        // Get contact (email) from navigation state or session
-        const stateContact = location.state?.email;
+        // Get contact (email or phone) from navigation state or session
+        const stateContact = location.state?.contact; // Fixed: was location.state?.email
         const storedContact = sessionStorage.getItem('otp_contact');
+
+        console.log('[VerifyOTP] State contact:', stateContact);
+        console.log('[VerifyOTP] Stored contact:', storedContact);
 
         const finalContact = stateContact || storedContact;
 
         if (finalContact) {
             setContact(finalContact);
+            console.log('[VerifyOTP] Using contact:', finalContact);
             // Auto-send OTP on load if not already sent recently
             if (!sessionStorage.getItem('otp_sent_at')) {
+                console.log('[VerifyOTP] Auto-sending OTP');
                 sendOTP(finalContact);
+                sessionStorage.setItem('otp_sent_at', Date.now().toString());
             }
         } else {
-            // If no contact found, redirect back to register
-            navigate('/register');
+            console.error('[VerifyOTP] No contact found, redirecting to login');
+            // If no contact found, redirect back to login
+            navigate('/login');
         }
     }, [location.state, navigate]);
 

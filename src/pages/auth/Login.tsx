@@ -19,15 +19,22 @@ export default function LoginPage() {
         setError('');
         setIsLoading(true);
 
+        console.log('[Login] Submitting with contact:', contact);
+
         try {
             const success = await sendOTP(contact);
+            console.log('[Login] sendOTP result:', success);
+
             if (success) {
+                console.log('[Login] Navigating to /verify-otp with contact:', contact);
                 // Navigate to OTP verification
                 navigate('/verify-otp', { state: { contact } });
             } else {
-                setError('Failed to send verification code. Please try again.');
+                console.error('[Login] sendOTP returned false');
+                setError('Failed to send verification code. Please check your email/phone and try again.');
             }
         } catch (err) {
+            console.error('[Login] Exception during sendOTP:', err);
             setError('An error occurred. Please try again.');
         } finally {
             setIsLoading(false);

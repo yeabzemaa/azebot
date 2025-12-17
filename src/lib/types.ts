@@ -3,8 +3,12 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
-  price: number;
-  salePrice?: number;
+  price: number; // Keep for backward compatibility
+  priceUSD: number;
+  priceETB: number;
+  salePrice?: number; // Keep for backward compatibility
+  salePriceUSD?: number;
+  salePriceETB?: number;
   images: string[];
   category: 'women' | 'men' | 'kids' | 'accessories';
   type: 'dress' | 'shirt' | 'pants' | 'scarf' | 'jewelry' | 'other';

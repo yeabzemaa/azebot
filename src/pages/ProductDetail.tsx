@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ShoppingCart, Heart, ArrowLeft, Check } from 'lucide-react';
+import { ShoppingCart, Heart, ArrowLeft, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { StarRating } from '@/components/ui/StarRating';
@@ -123,6 +123,26 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {/* Navigation Arrows */}
+            {product.images.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveImageIndex((prev) => (prev === 0 ? product.images.length - 1 : prev - 1))}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm shadow-xl hover:bg-white hover:scale-110 transition-all flex items-center justify-center text-[--deep-charcoal] hover:text-[--azebot-gold] border border-[--linen-beige]"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </button>
+                <button
+                  onClick={() => setActiveImageIndex((prev) => (prev === product.images.length - 1 ? 0 : prev + 1))}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm shadow-xl hover:bg-white hover:scale-110 transition-all flex items-center justify-center text-[--deep-charcoal] hover:text-[--azebot-gold] border border-[--linen-beige]"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </button>
+              </>
+            )}
+
             {/* Thumbnail Gallery */}
             {product.images.length > 1 && (
               <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4 z-20">
@@ -153,14 +173,14 @@ export default function ProductDetailPage() {
           <div>
             <h1 className="mb-3">{product.name}</h1>
 
-            {product.rating && (
-              <div className="flex items-center gap-3 mb-4">
-                <StarRating rating={product.rating} showNumber />
+            <div className="flex items-center gap-3 mb-4">
+              <StarRating rating={product.rating || 0} showNumber />
+              {product.reviewCount !== undefined && (
                 <span className="text-sm text-[--warm-grey]">
-                  ({product.reviewCount} reviews)
+                  ({product.reviewCount} {product.reviewCount === 1 ? 'review' : 'reviews'})
                 </span>
-              </div>
-            )}
+              )}
+            </div>
 
             <div className="flex items-center gap-3 mb-6">
               <span className="text-3xl">{formatPrice(price)}</span>

@@ -1,4 +1,7 @@
-export function formatPrice(price: number): string {
+export function formatPrice(price: number, currency: 'USD' | 'ETB' = 'ETB'): string {
+  if (currency === 'ETB') {
+    return `${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Br`;
+  }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

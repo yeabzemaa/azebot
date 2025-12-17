@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Send, Video } from 'lucide-react';
 import { Container } from './Container';
 import { TibebPattern, EthiopianCross } from '@/components/ui/EthiopianPatterns';
 
@@ -48,15 +48,6 @@ export function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5 text-[--deep-charcoal]" />
-              </a>
-              <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -66,13 +57,37 @@ export function Footer() {
                 <Facebook className="w-5 h-5 text-[--deep-charcoal]" />
               </a>
               <a
-                href="https://twitter.com"
+                href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"
-                aria-label="Twitter"
+                aria-label="Instagram"
               >
-                <Twitter className="w-5 h-5 text-[--deep-charcoal]" />
+                <Instagram className="w-5 h-5 text-[--deep-charcoal]" />
+              </a>
+              <a
+                href="https://telegram.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"
+                aria-label="Telegram"
+              >
+                <Send className="w-5 h-5 text-[--deep-charcoal]" />
+              </a>
+              <a
+                href="https://tiktok.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"
+                aria-label="TikTok"
+              >
+                <svg
+                  className="w-5 h-5 text-[--deep-charcoal] fill-current"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.86-.6-4.12-1.31a6.38 6.38 0 0 1-1.89-1.89c-.01 1.44-.01 2.89-.01 4.33 0 2.87-.25 5.85-2 8.23-1.63 2.22-4.4 3.4-7.07 3.26-2.73-.13-5.26-1.74-6.49-4.19-1.39-2.73-.83-6.26 1.48-8.4a6.66 6.66 0 0 1 5.31-1.7v4.01c-1.38-.2-2.83.21-3.79 1.25-.86.94-1.12 2.3-.61 3.51.52 1.24 1.83 2.05 3.16 2.02 1.43.05 2.76-.92 3.12-2.31.2-.74.19-1.52.19-2.29V.02z" />
+                </svg>
               </a>
             </div>
           </div>

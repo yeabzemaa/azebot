@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Globe, DollarSign } from 'lucide-react';
+import { useCurrencyStore } from '@/store/useCurrencyStore';
 
 export function LanguageSwitcher() {
     const [language, setLanguage] = useState<'en' | 'am'>('en');
@@ -37,7 +38,7 @@ export function LanguageSwitcher() {
 }
 
 export function CurrencySwitcher() {
-    const [currency, setCurrency] = useState<'USD' | 'ETB'>('USD');
+    const { currency, setCurrency } = useCurrencyStore();
 
     return (
         <div className="relative group">
