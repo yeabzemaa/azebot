@@ -104,7 +104,7 @@ function mapApiProductToProduct(apiProduct: ApiProduct): Product {
 
   // Since API doesn't provide separate USD/ETB prices, we'll use the price as USD and convert to ETB
   const priceUSD = parseFloat(apiProduct.price);
-  const priceETB = priceUSD * 120; // Conversion rate: 1 USD = ~120 ETB
+  const priceETB = priceUSD * 175; // Conversion rate: 1 USD = ~120 ETB
   const salePriceNum = apiProduct.sale_price ? parseFloat(apiProduct.sale_price) : undefined;
 
   return {
@@ -117,7 +117,7 @@ function mapApiProductToProduct(apiProduct: ApiProduct): Product {
     priceETB: priceETB,
     salePrice: salePriceNum,
     salePriceUSD: salePriceNum,
-    salePriceETB: salePriceNum ? salePriceNum * 120 : undefined,
+    salePriceETB: salePriceNum ? salePriceNum * 170 : undefined,
     images: images,
     category: categoryMap[apiProduct.category?.name] || 'women',
     type: (apiProduct.product_type as any) || 'dress',

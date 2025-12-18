@@ -12,31 +12,57 @@ export default function ContactPage() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate form submission
-    setSubmitted(true);
-    setTimeout(() => {
-      setName('');
-      setEmail('');
-      setMessage('');
-      setSubmitted(false);
-    }, 3000);
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch('https://formspree.io/f/mlgrrvey', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message
+        })
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        setName('');
+        setEmail('');
+        setMessage('');
+        // Reset success state after 5 seconds
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Something went wrong. Please try again.');
+      }
+    } catch (err) {
+      setError('Failed to send message. Please check your internet connection.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const contactInfo = [
     {
       icon: <Mail className="w-6 h-6" />,
       title: 'Email Us',
-      content: 'hello@azebot.com',
-      link: 'mailto:hello@azebot.com',
+      content: 'azebotdress@gmail.com',
+      link: 'mailto:azebotdress@gmail.com',
     },
     {
       icon: <Phone className="w-6 h-6" />,
       title: 'Call Us',
-      content: '+1 (555) 123-4567',
-      link: 'tel:+15551234567',
+      content: '+251 928 776 001',
+      link: 'tel:+251928776001',
     },
     {
       icon: <MapPin className="w-6 h-6" />,
@@ -48,7 +74,7 @@ export default function ContactPage() {
   const faqs = [
     {
       question: 'What is your shipping policy?',
-      answer: 'We offer free shipping on all orders over $100. Standard shipping takes 7-14 business days for international orders.',
+      answer: 'We offer worldwide shipping tailored to your needs. You may choose your preferred shipping option, and shipping fees will be calculated accordingly and covered by the customer. Delivery timelines depend on destination and carrier.',
     },
     {
       question: 'Do you ship internationally?',
@@ -60,7 +86,7 @@ export default function ContactPage() {
     },
     {
       question: 'How do I care for my traditional Ethiopian clothing?',
-      answer: 'Most items should be hand washed in cold water and line dried. Detailed care instructions are included with each purchase.',
+      answer: 'Most items should be hand washed in cold water and line dried.',
     },
     {
       question: 'Are your products authentic?',
@@ -68,7 +94,7 @@ export default function ContactPage() {
     },
     {
       question: 'How do I know my size?',
-      answer: 'We provide detailed size charts for each product. If you\'re between sizes, we recommend sizing up. Contact us for personalized sizing help!',
+      answer: 'We provide detailed size charts for each product where applicable. Many of our products are free size and designed to fit a range of body types. If you’re between sizes, we recommend sizing up. For personalized sizing assistance or fit questions, please contact us before placing your',
     },
   ];
 
@@ -158,6 +184,12 @@ export default function ContactPage() {
                 />
               </div>
 
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+
               <Button
                 type="submit"
                 variant="primary"
@@ -165,8 +197,9 @@ export default function ContactPage() {
                 icon={<Send className="w-5 h-5" />}
                 iconPosition="right"
                 className="w-full"
+                disabled={isSubmitting}
               >
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           )}

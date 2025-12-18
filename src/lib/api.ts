@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://52.2.218.198/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 export const ENDPOINTS = {
     AUTH: {

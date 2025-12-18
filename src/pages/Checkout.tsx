@@ -29,6 +29,7 @@ export default function CheckoutPage() {
   const [paymentScope, setPaymentScope] = useState<'local' | 'international'>('local');
 
   // Shipping info
+  const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
   const [address1, setAddress1] = useState('');
   const [address2, setAddress2] = useState('');
@@ -74,7 +75,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!fullName || !address1 || !city || !region || !phone) {
+    if (!username || !fullName || !address1 || !city || !region || !phone) {
       setError('Please fill in all required shipping information');
       return;
     }
@@ -101,6 +102,7 @@ export default function CheckoutPage() {
 
       const payload = {
         email: contact, // Using verified contact
+        username: username,
         shipping_address: {
           full_name: fullName,
           address1,
@@ -291,6 +293,15 @@ export default function CheckoutPage() {
 
               <h3 className="mb-6 pt-6 border-t border-[--linen-beige]">Shipping Information</h3>
               <form onSubmit={handleSendOTP} className="space-y-4">
+                <Input
+                  label="Username"
+                  value={username}
+                  onChange={setUsername}
+                  required
+                  disabled={step === 'verify'}
+                  placeholder="Enter your username"
+                />
+
                 <Input
                   label="Full Name"
                   value={fullName}

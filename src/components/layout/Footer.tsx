@@ -48,7 +48,7 @@ export function Footer() {
             </p>
             <div className="flex gap-4">
               <a
-                href="https://facebook.com"
+                href="https://web.facebook.com/profile.php?id=61585187048271"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"
@@ -57,7 +57,7 @@ export function Footer() {
                 <Facebook className="w-5 h-5 text-[--deep-charcoal]" />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/azebotdress/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"
@@ -66,7 +66,7 @@ export function Footer() {
                 <Instagram className="w-5 h-5 text-[--deep-charcoal]" />
               </a>
               <a
-                href="https://telegram.me"
+                href="https://t.me/azebotdresss"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"
@@ -75,7 +75,7 @@ export function Footer() {
                 <Send className="w-5 h-5 text-[--deep-charcoal]" />
               </a>
               <a
-                href="https://tiktok.com"
+                href="https://www.tiktok.com/@azebotdress?"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 hover:bg-[--linen-beige] rounded-full transition-all hover-lift border border-[--linen-beige]"

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { CartItem as CartItemType } from '@/lib/types';
 import { formatPrice } from '@/lib/utils';
+import { useCurrencyStore } from '@/store/useCurrencyStore';
 
 interface CartItemProps {
   item: CartItemType;
@@ -13,7 +14,11 @@ interface CartItemProps {
 
 export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
   const { product, quantity, selectedColor, selectedSize } = item;
-  const price = product.salePrice || product.price;
+  const { currency } = useCurrencyStore();
+
+  const price = currency === 'USD'
+    ? (product.salePriceUSD || product.priceUSD)
+    : (product.salePriceETB || product.priceETB);
   const subtotal = price * quantity;
 
   return (
@@ -56,7 +61,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
             </button>
           </div>
 
-          <span>{formatPrice(price)}</span>
+          <span>{formatPrice(price, currency)}</span>
         </div>
       </div>
 
@@ -70,7 +75,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove }: CartItemProps) {
           <X className="w-5 h-5 text-[--warm-grey]" />
         </button>
 
-        <span>{formatPrice(subtotal)}</span>
+        <span>{formatPrice(subtotal, currency)}</span>
       </div>
     </div>
   );

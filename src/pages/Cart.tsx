@@ -1,30 +1,15 @@
 'use client';
 
-import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { Button } from '@/components/ui/Button';
 import { CartItem } from '@/components/cart/CartItem';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { useCart } from '@/hooks/useCart';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function CartPage() {
-  const navigate = useNavigate();
   const { cart, updateCartItem, removeFromCart, total } = useCart();
-  const { isAuthenticated, requireAuth } = useAuth();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      requireAuth('/cart');
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate, requireAuth]);
-
-  if (!isAuthenticated) {
-    return null; // Don't render cart content until authenticated
-  }
 
   if (cart.items.length === 0) {
     return (
