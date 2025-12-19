@@ -15,7 +15,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 20.18.0
 
       - name: Install dependencies
         run: npm install
@@ -24,7 +24,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to S3
-        uses: jakejarvis/s3-sync-action@v0.6.0
+        uses: jakejarvis/s3-sync-action@v0.5.1
         with:
           args: --acl public-read --delete
         env:
