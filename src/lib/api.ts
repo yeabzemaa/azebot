@@ -31,6 +31,7 @@ export const ENDPOINTS = {
         CHECKOUT: '/orders/checkout/',
         DETAILS: (orderNumber: string) => `/orders/${orderNumber}/`,
         MY_ORDERS: '/orders/my-orders/',
+        PURCHASE_PROOF: '/orders/purchase-proof/',
     }
 } as const;
 
@@ -106,6 +107,25 @@ export const api = {
             method: 'POST',
             headers,
             body: JSON.stringify(body),
+        });
+
+        return handleResponse<T>(response);
+    },
+
+    postFormData: async <T>(endpoint: string, formData: FormData, authenticated = false): Promise<T> => {
+        const headers: HeadersInit = {};
+
+        if (authenticated) {
+            const token = getAuthToken();
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+        }
+
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            method: 'POST',
+            headers: headers as HeadersInit, // Content-Type is set automatically for FormData
+            body: formData,
         });
 
         return handleResponse<T>(response);

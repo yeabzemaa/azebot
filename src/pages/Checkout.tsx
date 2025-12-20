@@ -17,10 +17,10 @@ export default function CheckoutPage() {
   const { cart, total, clearCart } = useCart();
   const { user, isAuthenticated, requireAuth } = useAuth();
 
-  const [step, setStep] = useState<'info' | 'verify' | 'complete'>('info');
+  const [step, setStep] = useState<'info' | 'complete'>('info');
   const [contactMethod, setContactMethod] = useState<'email' | 'phone'>('email');
   const [contact, setContact] = useState('');
-  const [otp, setOtp] = useState('');
+  // const [otp, setOtp] = useState(''); // OTP removed
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
@@ -66,7 +66,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleSendOTP = async (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -82,10 +82,30 @@ export default function CheckoutPage() {
 
     setIsLoading(true);
     try {
-      await sendOTP(contact);
-      setStep('verify');
-    } catch (err) {
-      setError('Failed to send verification code. Please try again.');
+      // Direct Order Creation (Bypassing OTP)
+      const newOrderNumber = await createOrder();
+
+      // Clear cart after successful order
+      setTimeout(() => {
+        clearCart();
+      }, 1000);
+
+      // Redirect to payment proof for local payments
+      if (paymentScope === 'local') {
+        navigate('/payment-proof', {
+          state: {
+            orderNumber: newOrderNumber,
+            email: contact
+          }
+        });
+        return;
+      }
+
+      setOrderNumber(newOrderNumber);
+      setStep('complete');
+
+    } catch (err: any) {
+      setError(err.message || 'Failed to place order. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -123,39 +143,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
 
-    if (otp.length !== 6) {
-      setError('Please enter a 6-digit code');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // 1. Verify OTP (Auth check)
-      const verified = await verifyOTP(contact, otp);
-
-      if (verified) {
-        // 2. Place Order
-        const newOrderNumber = await createOrder();
-        setOrderNumber(newOrderNumber);
-
-        setStep('complete');
-        // Clear cart after successful order
-        setTimeout(() => {
-          clearCart();
-        }, 1000);
-      } else {
-        setError('Invalid verification code. Please try again.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Verification or Order failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (step === 'complete') {
     return (
@@ -292,13 +280,12 @@ export default function CheckoutPage() {
               )}
 
               <h3 className="mb-6 pt-6 border-t border-[--linen-beige]">Shipping Information</h3>
-              <form onSubmit={handleSendOTP} className="space-y-4">
+              <form onSubmit={handlePlaceOrder} className="space-y-4">
                 <Input
                   label="Username"
                   value={username}
                   onChange={setUsername}
                   required
-                  disabled={step === 'verify'}
                   placeholder="Enter your username"
                 />
 
@@ -307,7 +294,6 @@ export default function CheckoutPage() {
                   value={fullName}
                   onChange={setFullName}
                   required
-                  disabled={step === 'verify'}
                 />
 
                 <Input
@@ -315,14 +301,12 @@ export default function CheckoutPage() {
                   value={address1}
                   onChange={setAddress1}
                   required
-                  disabled={step === 'verify'}
                 />
 
                 <Input
                   label="Address Line 2 (Optional)"
                   value={address2}
                   onChange={setAddress2}
-                  disabled={step === 'verify'}
                 />
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -331,7 +315,6 @@ export default function CheckoutPage() {
                     value={city}
                     onChange={setCity}
                     required
-                    disabled={step === 'verify'}
                   />
 
                   <Input
@@ -339,7 +322,6 @@ export default function CheckoutPage() {
                     value={region}
                     onChange={setRegion}
                     required
-                    disabled={step === 'verify'}
                   />
                 </div>
 
@@ -349,16 +331,11 @@ export default function CheckoutPage() {
                   value={phone}
                   onChange={setPhone}
                   required
-                  disabled={step === 'verify'}
                   icon={<Phone className="w-4 h-4" />}
                 />
 
                 <div className="pt-4 border-t border-[--linen-beige]">
-                  <h3 className="mb-4">Contact Verification</h3>
-                  <p className="text-sm text-[--warm-grey] mb-4">
-                    We&apos;ll send a verification code to confirm your order.
-                  </p>
-
+                  <h3 className="mb-4">Contact Information</h3>
                   <div className="flex gap-4 mb-4">
                     <button
                       type="button"
@@ -367,7 +344,6 @@ export default function CheckoutPage() {
                         ? 'border-[--azebot-gold] bg-[--azebot-gold]/5'
                         : 'border-[--warm-grey]/30'
                         }`}
-                      disabled={step === 'verify'}
                     >
                       <Mail className="w-6 h-6 mx-auto mb-2" />
                       <span className="text-sm">Email</span>
@@ -380,7 +356,6 @@ export default function CheckoutPage() {
                         ? 'border-[--azebot-gold] bg-[--azebot-gold]/5'
                         : 'border-[--warm-grey]/30'
                         }`}
-                      disabled={step === 'verify'}
                     >
                       <Phone className="w-6 h-6 mx-auto mb-2" />
                       <span className="text-sm">Phone</span>
@@ -393,7 +368,6 @@ export default function CheckoutPage() {
                     value={contact}
                     onChange={setContact}
                     required
-                    disabled={step === 'verify'}
                     icon={contactMethod === 'email' ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
                   />
                 </div>
@@ -412,59 +386,13 @@ export default function CheckoutPage() {
                     loading={isLoading}
                     className="w-full"
                   >
-                    Proceed to Verify
+                    {paymentScope === 'international' ? 'Pay with Stripe' : 'Place Order'}
                   </Button>
                 )}
               </form>
             </div>
 
-            {/* OTP Verification */}
-            {step === 'verify' && (
-              <div className="bg-white rounded-lg p-6">
-                <h3 className="mb-4">Enter Verification Code</h3>
-                <p className="text-sm text-[--warm-grey] mb-6">
-                  We&apos;ve sent a 6-digit code to {contact}. Enter it below to complete your order.
-                </p>
 
-                <form onSubmit={handleVerifyOTP} className="space-y-4">
-                  <Input
-                    label="Verification Code"
-                    type="text"
-                    value={otp}
-                    onChange={setOtp}
-                    placeholder="Enter 6-digit code"
-                    required
-                    className="text-center text-2xl tracking-widest"
-                  />
-
-                  {error && (
-                    <div className="p-3 bg-[--sacred-red]/10 text-[--sacred-red] rounded-md text-sm">
-                      {error}
-                    </div>
-                  )}
-
-                  <div className="flex gap-4">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => setStep('info')}
-                      className="flex-1"
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      size="lg"
-                      loading={isLoading}
-                      className="flex-1"
-                    >
-                      {paymentScope === 'international' ? 'Pay with Stripe' : 'Place Order'}
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            )}
           </div>
 
           {/* Order Summary */}
