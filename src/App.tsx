@@ -1,5 +1,7 @@
 'use client';
 
+import { Toaster } from 'sonner';
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ScrollToTop } from './components/layout/ScrollToTop';
 import { Header } from './components/layout/Header';
@@ -43,6 +45,7 @@ export default function App() {
           </Routes>
         </main>
         <Footer />
+        <Toaster richColors closeButton position="top-center" />
       </div>
 
     </BrowserRouter>

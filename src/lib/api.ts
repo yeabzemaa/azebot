@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
 
 export const ENDPOINTS = {
@@ -83,12 +85,24 @@ export const api = {
             }
         }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'GET',
-            headers,
-        });
-
-        return handleResponse<T>(response);
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'GET',
+                headers,
+            });
+            return handleResponse<T>(response);
+        } catch (error: any) {
+            console.error('[API Error] Network error:', error);
+            if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+                // Check for Mixed Content possibility
+                if (window.location.protocol === 'https:' && API_BASE_URL.startsWith('http:')) {
+                    toast.error('Security Block: Cannot connect to HTTP backend from HTTPS site. Please verify your backend supports SSL.', { duration: 10000 });
+                } else {
+                    toast.error(`Connection Failed: Unable to reach server at ${API_BASE_URL}. Check if the backend is running.`, { duration: 5000 });
+                }
+            }
+            throw error;
+        }
     },
 
     post: async <T>(endpoint: string, body: any, authenticated = false): Promise<T> => {
@@ -103,13 +117,18 @@ export const api = {
             }
         }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(body),
-        });
-
-        return handleResponse<T>(response);
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(body),
+            });
+            return handleResponse<T>(response);
+        } catch (error: any) {
+            console.error('[API Error] Network error:', error);
+            toast.error('Request Failed: Unable to connect to server.');
+            throw error;
+        }
     },
 
     postFormData: async <T>(endpoint: string, formData: FormData, authenticated = false): Promise<T> => {
@@ -122,13 +141,18 @@ export const api = {
             }
         }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'POST',
-            headers: headers as HeadersInit, // Content-Type is set automatically for FormData
-            body: formData,
-        });
-
-        return handleResponse<T>(response);
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'POST',
+                headers: headers as HeadersInit,
+                body: formData,
+            });
+            return handleResponse<T>(response);
+        } catch (error: any) {
+            console.error('[API Error] Network error:', error);
+            toast.error('Upload Failed: Unable to connect to server.');
+            throw error;
+        }
     },
 
     put: async <T>(endpoint: string, body: any, authenticated = false): Promise<T> => {
@@ -143,13 +167,18 @@ export const api = {
             }
         }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'PUT',
-            headers,
-            body: JSON.stringify(body),
-        });
-
-        return handleResponse<T>(response);
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify(body),
+            });
+            return handleResponse<T>(response);
+        } catch (error: any) {
+            console.error('[API Error] Network error:', error);
+            toast.error('Update Failed: Unable to connect to server.');
+            throw error;
+        }
     },
 
     delete: async <T>(endpoint: string, authenticated = false): Promise<T> => {
@@ -164,11 +193,16 @@ export const api = {
             }
         }
 
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            method: 'DELETE',
-            headers,
-        });
-
-        return handleResponse<T>(response);
+        try {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'DELETE',
+                headers,
+            });
+            return handleResponse<T>(response);
+        } catch (error: any) {
+            console.error('[API Error] Network error:', error);
+            toast.error('Delete Failed: Unable to connect to server.');
+            throw error;
+        }
     },
 };
