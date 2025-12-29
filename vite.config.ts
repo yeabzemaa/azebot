@@ -58,7 +58,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://52.2.218.198',
+        target: 'https://api.azebotdress.com',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, '/api'),

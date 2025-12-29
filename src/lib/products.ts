@@ -67,7 +67,7 @@ function mapApiProductToProduct(apiProduct: ApiProduct): Product {
   // Construct images array
   // If images array exists and has length, use it. Otherwise fallback to main_image if present.
   let images: string[] = [];
-  const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL || 'http://52.2.218.198'; // API base URL for images
+  const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL || 'https://api.azebotdress.com'; // API base URL for images
 
   if (apiProduct.images && apiProduct.images.length > 0) {
     images = apiProduct.images.map(img => {
