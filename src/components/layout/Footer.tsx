@@ -34,7 +34,7 @@ export function Footer() {
       </div>
 
       <Container>
-        <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="py-12 grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-4">
@@ -92,53 +92,55 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Links */}
-          <div>
-            <h3 className="mb-4 font-elegant text-[--deep-charcoal] font-semibold">Shop</h3>
-            <ul className="space-y-2">
-              {footerLinks.shop.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-[--warm-grey] hover:text-[--azebot-gold] transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Links Grid - Mobile Optimized (Single Row) & Desktop Correct */}
+          <div className="lg:col-span-3 grid grid-cols-3 gap-2 md:gap-8 text-sm md:text-lg w-full">
+            <div>
+              <h3 className="mb-2 md:mb-4 font-elegant text-[--deep-charcoal] font-semibold text-base md:text-xl">Shop</h3>
+              <ul className="space-y-1 md:space-y-2">
+                {footerLinks.shop.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      to={link.href}
+                      className="text-[--warm-grey] hover:text-[--azebot-gold] transition-colors block py-1"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          <div>
-            <h3 className="mb-4 font-elegant text-[--deep-charcoal] font-semibold">Company</h3>
-            <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-[--warm-grey] hover:text-[--azebot-gold] transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+            <div>
+              <h3 className="mb-2 md:mb-4 font-elegant text-[--deep-charcoal] font-semibold text-base md:text-xl">Company</h3>
+              <ul className="space-y-1 md:space-y-2">
+                {footerLinks.company.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      to={link.href}
+                      className="text-[--warm-grey] hover:text-[--azebot-gold] transition-colors block py-1"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          <div>
-            <h3 className="mb-4 font-elegant text-[--deep-charcoal] font-semibold">Support</h3>
-            <ul className="space-y-2">
-              {footerLinks.support.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    to={link.href}
-                    className="text-[--warm-grey] hover:text-[--azebot-gold] transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div>
+              <h3 className="mb-2 md:mb-4 font-elegant text-[--deep-charcoal] font-semibold text-base md:text-xl">Support</h3>
+              <ul className="space-y-1 md:space-y-2">
+                {footerLinks.support.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      to={link.href}
+                      className="text-[--warm-grey] hover:text-[--azebot-gold] transition-colors block py-1"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 

@@ -33,7 +33,7 @@ export function Button({
     secondary: 'bg-[--ethiopian-green] text-white hover:opacity-90 active:scale-95',
     outline: 'border-2 border-[--azebot-gold] text-[--azebot-gold] hover:bg-[--azebot-gold] hover:text-white',
     ghost: 'text-[--deep-charcoal] hover:bg-[--linen-beige]',
-    premium: 'bg-gradient-to-r from-[--azebot-gold] to-[--amber-gold] text-[--deep-charcoal] shadow-lg hover:shadow-xl hover:-translate-y-0.5 border-none',
+    premium: '!bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-amber-950 font-bold shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-none',
   };
 
   const sizes = {
