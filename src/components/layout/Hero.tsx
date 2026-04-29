@@ -13,6 +13,7 @@ interface HeroProps {
     icon?: React.ReactNode;
   }>;
   height?: 'small' | 'medium' | 'large';
+  blur?: boolean;
 }
 
 export function Hero({
@@ -21,6 +22,7 @@ export function Hero({
   backgroundImage,
   ctaButtons = [],
   height = 'large',
+  blur = false,
 }: HeroProps) {
   const heights = {
     small: 'h-64 md:h-80',
@@ -35,7 +37,7 @@ export function Hero({
         <img
           src={backgroundImage}
           alt={title}
-          className="absolute inset-0 w-full h-full object-cover"
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${blur ? 'blur-md scale-110' : ''}`}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
       </div>

@@ -42,7 +42,8 @@ export default function HomePage() {
       <Hero
         title="Discover Improving Ethiopian Elegance"
         subtitle="Handcrafted traditional wear that blends heritage with modern style."
-        backgroundImage="assets/pp.jpg"
+        backgroundImage="assets/homepimg.png"
+        blur={true}
         ctaButtons={[
           {
             text: "Shop Now",

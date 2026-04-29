@@ -61,10 +61,6 @@ export default defineConfig({
         target: 'https://api.azebotdress.com',
         changeOrigin: true,
         secure: false,
-        headers: {
-          'Connection': 'keep-alive',
-        },
-        rewrite: (path) => path.replace(/^\/api/, '/api'),
       },
     },
   },

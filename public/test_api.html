@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <pre id="output">Testing...</pre>
+    <script>
+        const output = document.getElementById('output');
+        async function test() {
+            try {
+                // Test direct connection (might fail due to CORS)
+                const directUrl = 'https://api.azebotdress.com/api/v1/products/featured/';
+                output.textContent += '\nTesting direct fetch to ' + directUrl;
+                const directResponse = await fetch(directUrl).catch(e => e);
+                output.textContent += '\nDirect Result: ' + (directResponse.status || directResponse.message || 'Network Error (likely CORS)');
+
+                // Test relative fetch (simulating proxy)
+                // Note: This won't work unless this file is served by the Vite dev server
+                output.textContent += '\n\nNote: Relative fetch only works if served from localhost:3000';
+            } catch (err) {
+                output.textContent += '\nError: ' + err.message;
+            }
+        }
+        test();
+    </script>
+</body>
+</html>

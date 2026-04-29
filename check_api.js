@@ -1,6 +1,6 @@
 const https = require('https');
 
-const url = 'https://api.azebotdress.com/api/v1/products/?limit=1';
+const url = 'https://api.azebotdress.com/api/v1//products/featured/';
 
 console.log('Testing connection to:', url);
 

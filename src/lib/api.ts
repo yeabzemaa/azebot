@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.azebotdress.com/api/v1/';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.azebotdress.com/api/v1';
 
 export const ENDPOINTS = {
     AUTH: {
@@ -86,7 +86,14 @@ export const api = {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            // Normalize URL to prevent double slashes
+            const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+            const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+            const fullUrl = `${baseUrl}${cleanEndpoint}`;
+            
+            console.log(`[API] GET ${fullUrl}`);
+            
+            const response = await fetch(fullUrl, {
                 method: 'GET',
                 headers,
             });
@@ -118,7 +125,13 @@ export const api = {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+            const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+            const fullUrl = `${baseUrl}${cleanEndpoint}`;
+            
+            console.log(`[API] POST ${fullUrl}`);
+            
+            const response = await fetch(fullUrl, {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(body),
@@ -168,7 +181,13 @@ export const api = {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+            const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+            const fullUrl = `${baseUrl}${cleanEndpoint}`;
+            
+            console.log(`[API] PUT ${fullUrl}`);
+            
+            const response = await fetch(fullUrl, {
                 method: 'PUT',
                 headers,
                 body: JSON.stringify(body),
@@ -194,7 +213,13 @@ export const api = {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+            const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+            const fullUrl = `${baseUrl}${cleanEndpoint}`;
+            
+            console.log(`[API] DELETE ${fullUrl}`);
+            
+            const response = await fetch(fullUrl, {
                 method: 'DELETE',
                 headers,
             });
