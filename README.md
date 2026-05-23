@@ -159,7 +159,7 @@ This project highlights experience in:
 
 ### Developed & Delivered by Me 🚀
 
-Production E-Commerce Solution
+
 
 </div>
   
