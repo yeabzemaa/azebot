@@ -1,165 +1,76 @@
-v# 👗 Azebot E-Commerce Website
+# Azebot | Traditional Ethiopian Clothing & Modern Fashion
 
-![Next.js](https://img.shields.io/badge/Frontend-Next.js-black?logo=next.js)
-![TypeScript](https://img.shields.io/badge/Language-TypeScript-3178C6?logo=typescript&logoColor=white)
-![Django](https://img.shields.io/badge/Backend-Django-092E20?logo=django&logoColor=white)
-![AWS](https://img.shields.io/badge/Hosting-AWS-FF9900?logo=amazon-aws&logoColor=white)
+**Azebot** is an elegant, production-grade e-commerce platform dedicated to authentic Ethiopian traditional wear. We bring heritage and modern style together, showcasing handcrafted habesha kemis, netela, and intricate tibeb embroidery.
 
-## 📌 Project Overview
-
-**Azebot** is a production-grade **fashion e-commerce platform** developed for a client to deliver a seamless and scalable online shopping experience.
-
-The platform combines a modern **Next.js + TypeScript frontend** with a robust **Django backend API**, deployed on **AWS cloud infrastructure** for performance, reliability, and scalability.
-
-This repository serves as a **showcase of my development work and technical implementation**.
+This is a private repository containing the frontend source code.
 
 🌐 **Live Website:**  
 https://www.azebotdress.com
 
----
-
-## ✨ Key Features
-
-### 🛍️ E-Commerce Experience
-- Responsive and modern shopping interface
-- Mobile-friendly design
-- Fast product browsing experience
-
-### 🔍 Product Discovery
-- Product categories & filtering
-- Optimized search functionality
-- Clean product presentation
-
-### 👤 User Management
-- Authentication system
-- Customer account management
-- Personalized shopping flow
-
-### 🛒 Shopping Cart & Checkout
-- Dynamic cart updates
-- Smooth checkout experience
-- Order handling system
-
-### 🖼️ Product Management
-- High-quality product images
-- Product inventory display
-- Organized fashion collections
-
-### ⚡ Performance Optimization
-- Fast page rendering using **Next.js**
-- SEO-friendly architecture
-- Optimized backend APIs
-
----
-
-## 🛠️ Technology Stack
-
-### Frontend
-- **Next.js**
-- **TypeScript**
-- Responsive UI Design
-- SEO Optimization
-
-### Backend
-- **Django**
-- **Django REST Framework (DRF)**
-- RESTful API Architecture
-
-### Database
-- PostgreSQL
-
-### Infrastructure & Deployment
-- **AWS Hosting**
-- Cloud-based deployment
-- Scalable server architecture
-
----
-
-## 👨‍💻 My Role & Responsibilities
-
-For this project, I was responsible for:
-
-✅ Building the **frontend architecture** using **Next.js + TypeScript**  
-✅ Developing and integrating the **Django REST APIs**  
-✅ Implementing **e-commerce workflows** (products, cart, user flow)  
-✅ Optimizing **performance and responsiveness**  
-✅ Deploying and configuring the application on **AWS**  
-✅ Ensuring scalability and maintainability
-
----
-
-## 🧠 System Architecture
-
-The project follows a **modern full-stack architecture**:
-
-```text
-Client (Browser)
-        │
-        ▼
-Frontend (Next.js + TypeScript)
-        │
-        ▼
-REST API (Django + DRF)
-        │
-        ▼
-Database (PostgreSQL)
-        │
-        ▼
-AWS Cloud Hosting
-```
-
----
-
 ## 📸 Screenshots
 
-> Add screenshots of the website UI here.
+### Home Page
+![Home Page](./screen%20shot/home.png)
 
-### Homepage
+### Shop
+![Shop](./screen%20shot/shop.png)
 
-<img src="./screenshots/homepage.png" width="100%" />
+### About Us
+![About Us](./screen%20shot/about.png)
 
-### Product Listing
+## ✨ Features
 
-<p align="center">
-  <img src="./screenshots/products.png" width="48%" />
-  <img src="./screenshots/product-detail.png" width="48%" />
-</p>
+- **Modern & Responsive Design:** Built to look beautiful on all devices, from mobile phones to large desktop screens.
+- **Product Catalog:** Browse through our rich collection of traditional dresses and accessories.
+- **Dynamic UI Components:** Interactive elements built with Radix UI and Tailwind CSS for a premium user experience.
+- **State Management:** Fast and reliable global state handled by Zustand.
 
-### Shopping Experience
+## 🛠️ Tech Stack
 
-<p align="center">
-  <img src="./screenshots/cart.png" width="48%" />
-  <img src="./screenshots/checkout.png" width="48%" />
-</p>
+- **Framework:** React 18
+- **Build Tool:** Vite
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **UI Components:** Radix UI, Lucide React
+- **State Management:** Zustand
+- **Routing:** React Router DOM
+- **Forms & Validation:** React Hook Form
 
----
+## 🚀 Getting Started
 
-## 🌍 Live Project
+To run this project locally, follow these steps:
 
-Visit the live website:
+### Prerequisites
 
-### https://www.azebotdress.com
+Ensure you have [Node.js](https://nodejs.org/) installed on your machine.
 
----
+### Installation
 
-## 📂 Project Focus
+1. Clone the repository
+2. Install the dependencies:
+   ```bash
+   npm install
+   ```
 
-This project highlights experience in:
+### Running the Development Server
 
-- Full-stack web development
-- E-commerce architecture
-- API integration
-- Cloud deployment (AWS)
-- Performance optimization
-- Production-ready application development
+Start the Vite development server:
+```bash
+npm run dev
+```
+
+Open your browser and navigate to the local URL provided in your terminal (usually `http://localhost:5173`).
+
+## 📦 Build for Production
+
+To create an optimized production build:
+```bash
+npm run build
+```
+The compiled files will be output to the `dist` directory.
 
 ---
 
 <div align="center">
-
 ### Developed & Delivered by Me 🚀
-
-
-
 </div>
-  
